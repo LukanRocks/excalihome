@@ -1,15 +1,39 @@
-import { useState, type SubmitEvent } from 'react'
-import { Check } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type SubmitEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Check, Download, Upload } from 'lucide-react'
 
 import { Button } from '@/lib/components/button'
 import { api } from '@/lib/http-transport/api'
 import { clearTheme } from '@/lib/theme'
 import { clearUsername, getUsername, setUsername } from '@/lib/username'
 
+const downloadFile = (filename: string, contents: Blob) => {
+  const url = URL.createObjectURL(contents)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
+
 export default function Settings() {
   const [name, setName] = useState(() => getUsername() ?? '')
   const [saved, setSaved] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const handleExportAll = async () => {
+    setExporting(true)
+    try {
+      downloadFile('excalihome-export.zip', await api.boards.exportAll())
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Failed to export boards. Please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleDeleteAll = async () => {
     if (!window.confirm('Delete all boards and local settings? This cannot be undone.')) return
@@ -73,6 +97,23 @@ export default function Settings() {
             )}
           </Button>
         </form>
+      </div>
+
+      <div className='max-w-md rounded-xl border border-border bg-card p-4'>
+        <h2 className='text-sm font-medium text-card-foreground'>Export</h2>
+        <p className='mt-0.5 text-xs text-muted-foreground'>
+          Download each board as an .excalidraw file that can be opened in Excalidraw.
+        </p>
+
+        <Button variant='outline' disabled={exporting} onClick={handleExportAll} className='mt-4'>
+          {exporting ? (
+            'Exporting…'
+          ) : (
+            <>
+              Export all boards <Download />
+            </>
+          )}
+        </Button>
       </div>
 
       <div className='max-w-md rounded-xl border border-destructive/50 bg-card p-4'>

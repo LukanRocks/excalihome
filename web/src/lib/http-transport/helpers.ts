@@ -7,7 +7,7 @@ export const request = (method: string, payload: unknown, overrides?: RequestIni
   ...overrides,
 })
 
-export const perform = async <T>(endpoint: string, options?: RequestInit): Promise<T> => {
+const performRaw = async (endpoint: string, options?: RequestInit): Promise<Response> => {
   const response = await fetch(`${BASE_API_ENDPOINT}${endpoint}`, options)
 
   if (!response.ok) {
@@ -19,7 +19,19 @@ export const perform = async <T>(endpoint: string, options?: RequestInit): Promi
     throw error
   }
 
+  return response
+}
+
+export const perform = async <T>(endpoint: string, options?: RequestInit): Promise<T> => {
+  const response = await performRaw(endpoint, options)
+
   if (response.status === 204) return undefined as T // 204 No Content
 
   return response.json()
+}
+
+export const performBlob = async (endpoint: string, options?: RequestInit): Promise<Blob> => {
+  const response = await performRaw(endpoint, options)
+
+  return response.blob()
 }
