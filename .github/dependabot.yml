@@ -1,10 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: 'npm'
+    # Root only: pnpm workspace has a single lockfile, so root PRs cover
+    # web/ and backend/; per-directory PRs skip the lockfile entirely.
     directories:
       - '/'
-      - '/web'
-      - '/backend'
     schedule:
       interval: 'weekly'
     # Match pnpm-workspace.yaml minimumReleaseAge (2880 min = 48h)
