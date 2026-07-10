@@ -9,6 +9,7 @@ trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 129600 # minutes = 90d; versions older than this skip trust checks (minimumReleaseAge covers the fresh end)
 
 # Force patched lodash-es (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh, GHSA-xxjr-mmjv-4gpg)
+# !TODO: Review in future package updates if this override still required
 overrides:
   'lodash-es@<4.18.0': '>=4.18.0'
 
