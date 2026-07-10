@@ -1,7 +1,7 @@
 import '@excalidraw/excalidraw/index.css'
 
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { Download, FolderOpen, Trash2 } from 'lucide-react'
+import { Clock, CloudCheck, Download, FolderOpen, LoaderCircle, Trash2 } from 'lucide-react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
 import { Excalidraw, hashElementsVersion, MainMenu, serializeAsJSON } from '@excalidraw/excalidraw'
@@ -14,6 +14,12 @@ import { useTheme } from '@/lib/theme'
 import { downloadFile } from '@/lib/utils'
 
 const SAVE_DEBOUNCE_MS = 800
+
+const SAVE_STATES = {
+  saved: { icon: <CloudCheck />, label: 'Saved' },
+  pending: { icon: <Clock />, label: 'Unsaved changes' },
+  saving: { icon: <LoaderCircle className='animate-spin' />, label: 'Saving…' },
+}
 
 // Viewport and selection are deliberately left out — viewing a board shouldn't count as activity.
 // Theme is excluded too: it follows the app-wide theme instead of being saved per board.
@@ -60,6 +66,8 @@ export default function Board() {
     api.boards.update(Number(id), { name: trimmed }).then(refreshBoards)
   }
 
+  const [saveStatus, setSaveStatus] = useState<keyof typeof SAVE_STATES>('saved')
+
   const lastSavedVersion = useRef(0)
   const lastSavedAppState = useRef('')
   const saveTimeout = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -72,8 +80,13 @@ export default function Board() {
     pendingSave.current = null
   }
 
-  // Save any pending changes when switching boards or leaving the page
-  useEffect(() => flushSave, [id])
+  // Save any pending changes when switching boards or leaving the page; the flush
+  // cleanup runs before the reset, so the indicator starts fresh on the new board
+  useEffect(() => {
+    setSaveStatus('saved')
+
+    return flushSave
+  }, [id])
 
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -164,9 +177,13 @@ export default function Board() {
 
           if (version === lastSavedVersion.current && appStateSnapshot === lastSavedAppState.current) return
 
+          setSaveStatus('pending')
+
           pendingSave.current = () => {
             lastSavedVersion.current = version
             lastSavedAppState.current = appStateSnapshot
+
+            setSaveStatus('saving')
 
             api.boards.update(Number(id), {
               boardData: {
@@ -175,11 +192,20 @@ export default function Board() {
                 files,
               },
             })
+              // Newer edits may have queued another save while this one was in flight
+              .then(() => !pendingSave.current && setSaveStatus('saved'))
+              .catch(() => setSaveStatus('pending'))
           }
 
           clearTimeout(saveTimeout.current)
           saveTimeout.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS)
         }}
+        renderTopRightUI={() => (
+          <div className='flex h-9 items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground [&_svg]:size-4'>
+            {SAVE_STATES[saveStatus].icon}
+            {SAVE_STATES[saveStatus].label}
+          </div>
+        )}
       >
         <MainMenu>
           <MainMenu.Item icon={<FolderOpen />} onSelect={() => fileInput.current?.click()}>
