@@ -6,6 +6,7 @@ import { Button } from '@/lib/components/button'
 import { NavGroup } from '@/lib/components/nav-group'
 import { NavItem } from '@/lib/components/nav-item'
 import { SearchInput } from '@/lib/components/search-input'
+import { ShortcutBadge } from '@/lib/components/shortcut-badge'
 import { api, BoardSummary } from '@/lib/http-transport/api'
 
 export const Shell = () => {
@@ -82,7 +83,8 @@ export const Shell = () => {
         <SearchInput />
         <Button onClick={createBoard} className='justify-self-end'>
           <Plus />
-          Create board
+          Create
+          <ShortcutBadge action='createBoard' />
         </Button>
       </header>
 
