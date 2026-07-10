@@ -10,3 +10,10 @@ updates:
     # Match pnpm-workspace.yaml minimumReleaseAge (2880 min = 48h)
     cooldown:
       default-days: 2
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 2
