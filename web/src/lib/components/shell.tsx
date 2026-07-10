@@ -1,12 +1,32 @@
-import { Plus } from 'lucide-react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Home, Monitor, Moon, Pencil, Pin, PinOff, Plus, Presentation, Settings, Sun, Trash2 } from 'lucide-react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/lib/components/button'
+import { NavGroup } from '@/lib/components/nav-group'
+import { NavItem } from '@/lib/components/nav-item'
 import { SearchInput } from '@/lib/components/search-input'
-import { api } from '@/lib/http-transport/api'
+import { ShortcutBadge } from '@/lib/components/shortcut-badge'
+import { api, BoardSummary } from '@/lib/http-transport/api'
+import { useTheme } from '@/lib/theme'
+
+export interface ShellContext {
+  boards: BoardSummary[] | undefined
+  refreshBoards: () => void
+}
 
 export const Shell = () => {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const { theme, toggleTheme } = useTheme()
+
+  const [boards, setBoards] = useState<BoardSummary[]>()
+
+  const refreshBoards = () => {
+    api.boards.list().then(setBoards)
+  }
+
+  useEffect(refreshBoards, [pathname])
 
   const createBoard = async () => {
     const board = await api.boards.create()
@@ -14,25 +34,103 @@ export const Shell = () => {
     navigate(`/${board.id}`)
   }
 
+  const togglePin = async (board: BoardSummary) => {
+    await api.boards.pin(board.id, !board.pinned)
+
+    refreshBoards()
+  }
+
+  const renameBoard = async (board: BoardSummary) => {
+    const name = window.prompt('Rename board', board.name)?.trim()
+
+    if (!name || name === board.name) return
+
+    await api.boards.update(board.id, { name })
+
+    refreshBoards()
+  }
+
+  const deleteBoard = async (board: BoardSummary) => {
+    if (!window.confirm(`Delete "${board.name}"? This cannot be undone.`)) return
+
+    await api.boards.delete(board.id)
+
+    // Navigating away from the deleted board triggers the refetch via pathname
+    if (pathname === `/${board.id}`) navigate('/')
+    else refreshBoards()
+  }
+
+  const boardItem = (board: BoardSummary) => (
+    <NavItem
+      key={board.id}
+      to={`/${board.id}`}
+      icon={board.pinned ? <Pin /> : <Presentation />}
+      actions={[
+        {
+          icon: board.pinned ? <PinOff /> : <Pin />,
+          label: board.pinned ? 'Unpin' : 'Pin',
+          action: () => togglePin(board),
+        },
+        { icon: <Pencil />, label: 'Rename', action: () => renameBoard(board) },
+        { icon: <Trash2 />, label: 'Delete', action: () => deleteBoard(board), destructive: true },
+      ]}
+    >
+      {board.name}
+    </NavItem>
+  )
+
+  const pinnedBoards = boards?.filter((board) => board.pinned)
+  const recentBoards = boards?.filter((board) => !board.pinned)
+
   return (
-    <div className='flex h-screen w-screen bg-sidebar'>
-      <aside className='flex w-56 flex-col gap-6 p-3'>
-        <Link to='/' className='flex items-center gap-2.5 px-1 py-2'>
+    <div className='flex h-screen w-screen flex-col bg-sidebar'>
+      <header className='grid h-14 shrink-0 grid-cols-[1fr_minmax(0,24rem)_1fr] items-center gap-4 px-2'>
+        <Link to='/' className='flex items-center gap-2 justify-self-start px-1 py-2'>
           <img src='/logo.svg' alt='ExcaliHome' className='size-8 rounded-lg' />
           <span className='text-lg font-semibold leading-none tracking-tight text-sidebar-foreground'>ExcaliHome</span>
         </Link>
-      </aside>
+        <SearchInput />
+        <Button onClick={createBoard} className='justify-self-end'>
+          <Plus />
+          Create
+          <ShortcutBadge action='createBoard' />
+        </Button>
+      </header>
 
-      <div className='flex min-w-0 flex-1 flex-col'>
-        <header className='flex h-14 shrink-0 items-center justify-between gap-4 px-3'>
-          <SearchInput />
-          <Button onClick={createBoard}>
-            <Plus />
-            Create board
-          </Button>
-        </header>
-        <main className='mb-2 mr-2 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background p-2'>
-          <Outlet />
+      <div className='flex min-h-0 flex-1'>
+        <aside className='flex w-56 flex-col p-2'>
+          <div className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto'>
+            <nav className='flex flex-col gap-1'>
+              <NavItem to='/' end icon={<Home />}>
+                Home
+              </NavItem>
+              <NavItem to='/settings' icon={<Settings />}>
+                Settings
+              </NavItem>
+            </nav>
+
+            {!!pinnedBoards?.length && <NavGroup title='Pinned'>{pinnedBoards.map(boardItem)}</NavGroup>}
+
+            <NavGroup title='Recents'>
+              {recentBoards?.map(boardItem)}
+            </NavGroup>
+          </div>
+
+          <footer className='flex items-center gap-1 pt-2'>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={toggleTheme}
+              title={`Theme: ${theme}`}
+              className='size-7 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+            >
+              {theme === 'light' ? <Sun /> : theme === 'dark' ? <Moon /> : <Monitor />}
+            </Button>
+          </footer>
+        </aside>
+
+        <main className='mb-2 mr-2 min-w-0 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background'>
+          <Outlet context={{ boards, refreshBoards } satisfies ShellContext} />
         </main>
       </div>
     </div>

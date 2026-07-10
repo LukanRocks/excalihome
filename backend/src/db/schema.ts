@@ -4,6 +4,7 @@ export const boards = sqliteTable('boards', {
   id: integer().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
   boardData: text({ mode: 'json' }).notNull(),
+  pinned: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: integer({ mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),

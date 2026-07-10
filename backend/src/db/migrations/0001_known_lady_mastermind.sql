@@ -1,0 +1,1 @@
+ALTER TABLE `boards` ADD `pinned` integer DEFAULT false NOT NULL;
