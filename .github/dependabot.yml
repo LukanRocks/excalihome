@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directories:
+      - '/'
+      - '/web'
+      - '/backend'
+    schedule:
+      interval: 'weekly'
+    # Match pnpm-workspace.yaml minimumReleaseAge (2880 min = 48h)
+    cooldown:
+      default-days: 2
