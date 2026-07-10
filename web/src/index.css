@@ -83,6 +83,58 @@
   display: none !important;
 }
 
+/* Move the toolbar to the bottom center, anchored to the editor-wide FixedSideContainer
+   (1rem insets — same line as the undo/redo and zoom islands). Centered with auto
+   margins instead of a transform on purpose: the HintViewer below uses position: fixed,
+   and a transformed ancestor would become its containing block. Desktop only — the
+   mobile layout has its own bottom toolbar. */
+.excalidraw:not(.excalidraw--mobile) .App-toolbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+/* The shapes section wraps the toolbar in a div with an inline position: relative,
+   which would otherwise hijack the toolbar's absolute positioning above */
+.excalidraw:not(.excalidraw--mobile) .shapes-section > div {
+  position: static !important;
+}
+
+/* The hint text lives inside the toolbar island, so it would follow it down; pin it
+   back to the top center of the canvas area instead. Fixed positioning escapes the
+   island, but the offsets must mirror the app shell: sidebar w-56 (14rem), main mr-2
+   (0.5rem), header h-14 (3.5rem) + 1rem editor padding. */
+.excalidraw:not(.excalidraw--mobile) .HintViewer {
+  position: fixed;
+  left: 14rem;
+  right: 0.5rem;
+  top: 4.5rem;
+  width: auto;
+  margin-top: 0;
+}
+
+/* With the toolbar at the bottom, the "more tools" dropdown must open upward */
+.excalidraw:not(.excalidraw--mobile) .App-toolbar__extra-tools-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 0.375rem;
+}
+
+/* Move the zoom controls from the bottom-left cluster to the bottom-right corner,
+   anchored to the footer bar (.App-menu_bottom); undo/redo stays bottom-left. In zen
+   mode the footer-left wrapper (still the zoom island's DOM ancestor) gets a
+   transform, which pulls the zoom island off screen with it — same hiding behavior
+   as before the move. */
+.excalidraw .zoom-actions {
+  position: absolute;
+  right: 1rem;
+  bottom: 0;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
