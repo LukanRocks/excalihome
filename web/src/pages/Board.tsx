@@ -8,19 +8,22 @@ import { AppState, ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@
 
 import { useCollaboration } from '@/lib/hooks/use-collaboration'
 import { api } from '@/lib/http-transport/api'
+import { useTheme } from '@/lib/theme'
 
 const SAVE_DEBOUNCE_MS = 800
 
-// Viewport and selection are deliberately left out — viewing a board shouldn't count as activity
+// Viewport and selection are deliberately left out — viewing a board shouldn't count as activity.
+// Theme is excluded too: it follows the app-wide theme instead of being saved per board.
 const persistableAppState = (appState: Partial<AppState>) => ({
   viewBackgroundColor: appState.viewBackgroundColor,
-  theme: appState.theme,
   gridModeEnabled: appState.gridModeEnabled,
 })
 
 export default function Board() {
   const { id } = useParams()
   const navigate = useNavigate()
+
+  const { resolvedTheme } = useTheme()
 
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null)
   const { broadcastScene, broadcastPointer } = useCollaboration(Number(id), excalidrawAPI)
@@ -43,6 +46,7 @@ export default function Board() {
   return (
     <Excalidraw
       key={id}
+      theme={resolvedTheme}
       excalidrawAPI={setExcalidrawAPI}
       initialData={async () => {
         const board = await api.boards.get(Number(id)).catch(() => null)
