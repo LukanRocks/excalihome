@@ -1,12 +1,12 @@
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
 
-import { BoardSummary } from '@/lib/http-transport/api'
+import { ShellContext } from '@/lib/components/shell'
 
 export default function Home() {
   const [searchParams] = useSearchParams()
   const q = searchParams.get('q') ?? ''
 
-  const boards = useOutletContext<BoardSummary[] | undefined>()
+  const { boards } = useOutletContext<ShellContext>()
 
   if (!boards) return null
 
