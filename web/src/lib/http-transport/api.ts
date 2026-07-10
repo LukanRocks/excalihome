@@ -1,4 +1,4 @@
-import { perform, request } from './helpers'
+import { perform, performBlob, request } from './helpers'
 
 export interface BoardSummary {
   id: number
@@ -32,5 +32,8 @@ export const api = {
     update: (id: number, data: { name?: string; boardData?: unknown }) => perform<Board>(`/boards/${id}`, request('PUT', data)),
     pin: (id: number, pinned: boolean) => perform<Board>(`/boards/${id}/pin`, request('PUT', { pinned })),
     delete: (id: number) => perform<void>(`/boards/${id}`, { method: 'DELETE' }),
+    deleteAll: () => perform<void>('/boards', { method: 'DELETE' }),
+    exportAll: () => performBlob('/boards/export'),
+    import: (files: { name: string; contents: string }[]) => perform<BoardSummary[]>('/boards/import', request('POST', { files })),
   },
 }
