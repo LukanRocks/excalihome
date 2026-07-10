@@ -10,6 +10,11 @@ import { ShortcutBadge } from '@/lib/components/shortcut-badge'
 import { api, BoardSummary } from '@/lib/http-transport/api'
 import { useTheme } from '@/lib/theme'
 
+export interface ShellContext {
+  boards: BoardSummary[] | undefined
+  refreshBoards: () => void
+}
+
 export const Shell = () => {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -17,9 +22,11 @@ export const Shell = () => {
 
   const [boards, setBoards] = useState<BoardSummary[]>()
 
-  useEffect(() => {
+  const refreshBoards = () => {
     api.boards.list().then(setBoards)
-  }, [pathname])
+  }
+
+  useEffect(refreshBoards, [pathname])
 
   const createBoard = async () => {
     const board = await api.boards.create()
@@ -30,7 +37,7 @@ export const Shell = () => {
   const togglePin = async (board: BoardSummary) => {
     await api.boards.pin(board.id, !board.pinned)
 
-    api.boards.list().then(setBoards)
+    refreshBoards()
   }
 
   const renameBoard = async (board: BoardSummary) => {
@@ -40,7 +47,7 @@ export const Shell = () => {
 
     await api.boards.update(board.id, { name })
 
-    api.boards.list().then(setBoards)
+    refreshBoards()
   }
 
   const deleteBoard = async (board: BoardSummary) => {
@@ -50,7 +57,7 @@ export const Shell = () => {
 
     // Navigating away from the deleted board triggers the refetch via pathname
     if (pathname === `/${board.id}`) navigate('/')
-    else api.boards.list().then(setBoards)
+    else refreshBoards()
   }
 
   const boardItem = (board: BoardSummary) => (
@@ -123,7 +130,7 @@ export const Shell = () => {
         </aside>
 
         <main className='mb-2 mr-2 min-w-0 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background'>
-          <Outlet context={boards} />
+          <Outlet context={{ boards, refreshBoards } satisfies ShellContext} />
         </main>
       </div>
     </div>
