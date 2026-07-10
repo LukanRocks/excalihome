@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { ChevronRight, UserRound } from 'lucide-react'
 
 import { Button } from '@/lib/components/button'
@@ -7,7 +7,7 @@ import { setUsername } from '@/lib/username'
 export default function Onboarding({ onComplete }: { onComplete: (name: string) => void }) {
   const [name, setName] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault()
 
     const trimmed = name.trim()
