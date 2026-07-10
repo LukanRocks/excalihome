@@ -4,10 +4,9 @@ import { io, Socket } from 'socket.io-client'
 import { CaptureUpdateAction, hashElementsVersion, reconcileElements } from '@excalidraw/excalidraw'
 import { Collaborator, ExcalidrawImperativeAPI, SocketId } from '@excalidraw/excalidraw/types'
 
-const BROADCAST_THROTTLE_MS = 100
+import { getUsername } from '@/lib/username'
 
-// Stable per-tab identity so remote cursors have a name
-const username = `Guest ${Math.floor(100 + Math.random() * 900)}`
+const BROADCAST_THROTTLE_MS = 100
 
 type LocalElements = Parameters<typeof reconcileElements>[0]
 type RemoteElements = Parameters<typeof reconcileElements>[1]
@@ -37,11 +36,7 @@ export const useCollaboration = (boardId: number, excalidrawAPI: ExcalidrawImper
     const collaborators = new Map<SocketId, Collaborator>()
 
     socket.on('scene-update', (remoteElements: RemoteElements) => {
-      const reconciled = reconcileElements(
-        excalidrawAPI.getSceneElementsIncludingDeleted(),
-        remoteElements,
-        excalidrawAPI.getAppState(),
-      )
+      const reconciled = reconcileElements(excalidrawAPI.getSceneElementsIncludingDeleted(), remoteElements, excalidrawAPI.getAppState())
 
       // Remember the merged version so the onChange this triggers isn't echoed back
       lastSyncedVersion.current = hashElementsVersion(reconciled)
@@ -86,7 +81,7 @@ export const useCollaboration = (boardId: number, excalidrawAPI: ExcalidrawImper
 
   const broadcastPointer = (payload: PointerPayload) => {
     socketRef.current?.emit('pointer-update', boardId, {
-      username,
+      username: getUsername() ?? 'Guest',
       pointer: payload.pointer,
       button: payload.button,
     } satisfies Collaborator)
