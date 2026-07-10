@@ -1,80 +1,99 @@
 import '@excalidraw/excalidraw/index.css'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { Excalidraw, MainMenu } from '@excalidraw/excalidraw'
-import { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
+import { Excalidraw, hashElementsVersion, MainMenu } from '@excalidraw/excalidraw'
+import { AppState, ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
 
+import { useCollaboration } from '@/lib/hooks/use-collaboration'
 import { api } from '@/lib/http-transport/api'
 
-import { ChevronLeft, Plus, FolderOpen, FileUp, FileDown, Shredder } from 'lucide-react'
+const SAVE_DEBOUNCE_MS = 800
+
+// Viewport and selection are deliberately left out — viewing a board shouldn't count as activity
+const persistableAppState = (appState: Partial<AppState>) => ({
+  viewBackgroundColor: appState.viewBackgroundColor,
+  theme: appState.theme,
+  gridModeEnabled: appState.gridModeEnabled,
+})
 
 export default function Board() {
-  const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | undefined>(undefined)
-
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const save = () => {
-    // ! I'm not saving appState because it's giving an error
-    api.boards.update(Number(id), {
-      boardData: { elements: excalidrawAPI?.getSceneElements() },
-    })
+  const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null)
+  const { broadcastScene, broadcastPointer } = useCollaboration(Number(id), excalidrawAPI)
+
+  const lastSavedVersion = useRef(0)
+  const lastSavedAppState = useRef('')
+  const saveTimeout = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const pendingSave = useRef<(() => void) | null>(null)
+
+  const flushSave = () => {
+    clearTimeout(saveTimeout.current)
+
+    pendingSave.current?.()
+    pendingSave.current = null
   }
 
-  // Menu Actions
-  const navigateHome = () => navigate('/')
-  const createNewCanvas = async () => {
-    const board = await api.boards.create()
-
-    navigate(`/${board.id}`)
-  }
-
-  const openCanvas = () => window.alert('Item1')
-  const importCanvas = () => window.alert('Item1')
-  const resetCanvas = () => window.alert('Item1')
-  const exportCanvas = () => window.alert('Item1')
+  // Save any pending changes when switching boards or leaving the page
+  useEffect(() => flushSave, [id])
 
   return (
     <Excalidraw
       key={id}
-      isCollaborating={false}
-      excalidrawAPI={(excalidraw) => setExcalidrawAPI(excalidraw)}
-      onPointerUp={save}
+      excalidrawAPI={setExcalidrawAPI}
       initialData={async () => {
         const board = await api.boards.get(Number(id)).catch(() => null)
 
-        return (board?.boardData ?? null) as ExcalidrawInitialDataState | null
+        if (!board) {
+          navigate('/', { replace: true })
+
+          return null
+        }
+
+        const data = board.boardData as ExcalidrawInitialDataState
+
+        lastSavedVersion.current = hashElementsVersion(data.elements ?? [])
+        lastSavedAppState.current = JSON.stringify(persistableAppState(data.appState ?? {}))
+
+        return data
+      }}
+      onPointerUpdate={broadcastPointer}
+      onChange={(elements, appState, files) => {
+        broadcastScene(elements)
+
+        // Scene version only moves on element changes — selection and panning don't trigger saves
+        const version = hashElementsVersion(elements)
+        const appStateSnapshot = JSON.stringify(persistableAppState(appState))
+
+        if (version === lastSavedVersion.current && appStateSnapshot === lastSavedAppState.current) return
+
+        pendingSave.current = () => {
+          lastSavedVersion.current = version
+          lastSavedAppState.current = appStateSnapshot
+
+          api.boards.update(Number(id), {
+            boardData: {
+              elements: elements.filter((element) => !element.isDeleted),
+              appState: persistableAppState(appState),
+              files,
+            },
+          })
+        }
+
+        clearTimeout(saveTimeout.current)
+        saveTimeout.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS)
       }}
     >
       <MainMenu>
-        <MainMenu.Item onSelect={navigateHome} icon={<ChevronLeft />}>
-          Home
-        </MainMenu.Item>
-
-        <MainMenu.Group title='Actions'>
-          <MainMenu.Item onSelect={createNewCanvas} icon={<Plus />}>
-            New
-          </MainMenu.Item>
-          <MainMenu.Item onSelect={openCanvas} icon={<FolderOpen />}>
-            Open
-          </MainMenu.Item>
-          <MainMenu.Item onSelect={importCanvas} icon={<FileUp />}>
-            Import
-          </MainMenu.Item>
-          <MainMenu.Item onSelect={exportCanvas} icon={<FileDown />}>
-            Export
-          </MainMenu.Item>
-          <MainMenu.Item onSelect={resetCanvas} icon={<Shredder className='text-red-500' />}>
-            <span className='text-red-500'>Reset</span>
-          </MainMenu.Item>
-        </MainMenu.Group>
-
-        <MainMenu.Group title='Excalidraw'>
-          <MainMenu.DefaultItems.Help />
-          <MainMenu.DefaultItems.Socials />
-        </MainMenu.Group>
+        <MainMenu.DefaultItems.LoadScene />
+        <MainMenu.DefaultItems.Export />
+        <MainMenu.DefaultItems.SaveAsImage />
+        <MainMenu.DefaultItems.ClearCanvas />
+        <MainMenu.Separator />
+        <MainMenu.DefaultItems.Help />
       </MainMenu>
     </Excalidraw>
   )

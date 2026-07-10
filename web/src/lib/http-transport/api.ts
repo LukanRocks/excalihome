@@ -8,8 +8,14 @@ export interface BoardSummary {
   updatedAt: string
 }
 
+export interface BoardData {
+  elements: unknown[]
+  appState?: Record<string, unknown>
+  files?: Record<string, unknown>
+}
+
 export interface Board extends BoardSummary {
-  boardData: { elements: unknown[] }
+  boardData: BoardData
 }
 
 export const api = {
