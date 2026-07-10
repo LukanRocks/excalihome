@@ -6,17 +6,7 @@ import { Button } from '@/lib/components/button'
 import { api } from '@/lib/http-transport/api'
 import { clearTheme } from '@/lib/theme'
 import { clearUsername, getUsername, setUsername } from '@/lib/username'
-
-const downloadFile = (filename: string, contents: Blob) => {
-  const url = URL.createObjectURL(contents)
-
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-
-  URL.revokeObjectURL(url)
-}
+import { downloadFile } from '@/lib/utils'
 
 export default function Settings() {
   const navigate = useNavigate()

@@ -1,15 +1,17 @@
 import '@excalidraw/excalidraw/index.css'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { Download, FolderOpen, Trash2 } from 'lucide-react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
-import { Excalidraw, hashElementsVersion, MainMenu } from '@excalidraw/excalidraw'
+import { Excalidraw, hashElementsVersion, MainMenu, serializeAsJSON } from '@excalidraw/excalidraw'
 import { AppState, ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
 
 import { ShellContext } from '@/lib/components/shell'
 import { useCollaboration } from '@/lib/hooks/use-collaboration'
 import { api } from '@/lib/http-transport/api'
 import { useTheme } from '@/lib/theme'
+import { downloadFile } from '@/lib/utils'
 
 const SAVE_DEBOUNCE_MS = 800
 
@@ -73,12 +75,69 @@ export default function Board() {
   // Save any pending changes when switching boards or leaving the page
   useEffect(() => flushSave, [id])
 
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  // Overrides Excalidraw's Open: instead of replacing the current scene, the file
+  // becomes a new board and we navigate to it
+  const openFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target
+    const file = input.files?.[0]
+
+    input.value = '' // Allow re-selecting the same file later
+
+    if (!file) return
+
+    try {
+      const [board] = await api.boards.import([
+        {
+          name: file.name.replace(/\.excalidraw$/i, ''),
+          contents: await file.text(),
+        },
+      ])
+
+      navigate(`/${board.id}`)
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Failed to open file. Please try again.')
+    }
+  }
+
+  // Serializes the live scene (including changes still in the save debounce window),
+  // producing the same file format the bulk export uses
+  const exportBoard = () => {
+    if (!excalidrawAPI) return
+
+    const json = serializeAsJSON(excalidrawAPI.getSceneElements(), excalidrawAPI.getAppState(), excalidrawAPI.getFiles(), 'local')
+
+    downloadFile(`${savedName ?? 'board'}.excalidraw`, new Blob([json], { type: 'application/json' }))
+  }
+
+  const deleteBoard = async () => {
+    if (!window.confirm(`Delete "${savedName}"? This cannot be undone.`)) return
+
+    // Drop any pending debounced save so it doesn't fire against the deleted board
+    clearTimeout(saveTimeout.current)
+    pendingSave.current = null
+
+    await api.boards.delete(Number(id))
+
+    navigate('/')
+  }
+
   return (
-    <div className='relative h-full w-full'>
+    <div
+      className='relative h-full w-full'
+      // Excalidraw has no UIOption for the help dialog, so its '?' shortcut is
+      // intercepted before it reaches the canvas. Typing '?' in text elements is
+      // unaffected — stopping propagation doesn't block text input.
+      onKeyDownCapture={(event) => {
+        if (event.key === '?') event.stopPropagation()
+      }}
+    >
       <Excalidraw
         key={id}
         theme={resolvedTheme}
         excalidrawAPI={setExcalidrawAPI}
+        UIOptions={{ canvasActions: { loadScene: false, export: false, saveToActiveFile: false } }}
         initialData={async () => {
           const board = await api.boards.get(Number(id)).catch(() => null)
 
@@ -123,14 +182,21 @@ export default function Board() {
         }}
       >
         <MainMenu>
-          <MainMenu.DefaultItems.LoadScene />
-          <MainMenu.DefaultItems.Export />
+          <MainMenu.Item icon={<FolderOpen />} onSelect={() => fileInput.current?.click()}>
+            Open
+          </MainMenu.Item>
+          <MainMenu.Item icon={<Download />} onSelect={exportBoard}>
+            Export
+          </MainMenu.Item>
           <MainMenu.DefaultItems.SaveAsImage />
-          <MainMenu.DefaultItems.ClearCanvas />
           <MainMenu.Separator />
-          <MainMenu.DefaultItems.Help />
+          <MainMenu.Item icon={<Trash2 />} onSelect={deleteBoard} className='text-destructive!'>
+            Delete
+          </MainMenu.Item>
         </MainMenu>
       </Excalidraw>
+
+      <input ref={fileInput} type='file' accept='.excalidraw' hidden onChange={openFile} />
 
       {name !== undefined && (
         <input
