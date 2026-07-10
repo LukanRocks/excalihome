@@ -1,0 +1,16 @@
+{
+  "name": "excalihome",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter excalihome-web --filter excalihome-backend dev",
+    "build": "pnpm -C backend build && pnpm -C web build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.8.3",
+    "prettier-plugin-tailwindcss": "0.8.0"
+  }
+}
