@@ -23,7 +23,7 @@ You can expect an acknowledgement within **48 hours** and a status update within
 
 ## Scope
 
-Tally is a self-hosted application. The security model assumes you are running it on a trusted private network or behind appropriate access controls (reverse proxy, VPN, firewall, etc.). As a result:
+ExcaliHome is a self-hosted application. The security model assumes you are running it on a trusted private network or behind appropriate access controls (reverse proxy, VPN, firewall, etc.). As a result:
 
 - Vulnerabilities that require physical or administrative access to the host are out of scope.
 - Vulnerabilities in your deployment infrastructure (e.g. an exposed Docker socket) are out of scope.
