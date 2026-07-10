@@ -75,6 +75,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* The bottom-right help button and the top-right library button aren't covered by
+   Excalidraw's UIOptions; !important because Excalidraw's stylesheet loads after this
+   one with equal specificity. The help dialog's '?' shortcut is blocked in Board.tsx. */
+.excalidraw .help-icon,
+.excalidraw .default-sidebar-trigger {
+  display: none !important;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
