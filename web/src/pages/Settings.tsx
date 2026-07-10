@@ -2,11 +2,31 @@ import { useState, type SubmitEvent } from 'react'
 import { Check } from 'lucide-react'
 
 import { Button } from '@/lib/components/button'
-import { getUsername, setUsername } from '@/lib/username'
+import { api } from '@/lib/http-transport/api'
+import { clearTheme } from '@/lib/theme'
+import { clearUsername, getUsername, setUsername } from '@/lib/username'
 
 export default function Settings() {
   const [name, setName] = useState(() => getUsername() ?? '')
   const [saved, setSaved] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Delete all boards and local settings? This cannot be undone.')) return
+
+    setDeleting(true)
+    try {
+      await api.boards.deleteAll()
+
+      clearUsername()
+      clearTheme()
+
+      window.location.href = '/'
+    } catch {
+      setDeleting(false)
+      window.alert('Failed to delete data. Please try again.')
+    }
+  }
 
   const trimmed = name.trim()
   const dirty = trimmed !== (getUsername() ?? '')
@@ -53,6 +73,17 @@ export default function Settings() {
             )}
           </Button>
         </form>
+      </div>
+
+      <div className='max-w-md rounded-xl border border-destructive/50 bg-card p-4'>
+        <h2 className='text-sm font-medium text-destructive'>Danger zone</h2>
+        <p className='mt-0.5 text-xs text-muted-foreground'>
+          Permanently delete all boards and local settings, including your name. You will be taken back to onboarding.
+        </p>
+
+        <Button variant='destructive' disabled={deleting} onClick={handleDeleteAll} className='mt-4'>
+          {deleting ? 'Deleting…' : 'Delete all data'}
+        </Button>
       </div>
     </div>
   )

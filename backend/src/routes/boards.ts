@@ -129,6 +129,17 @@ router.put('/:id/pin', (req: Request, res: Response, next: NextFunction) => {
   }
 })
 
+// DELETE /api/v1/boards
+router.delete('/', (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    db.delete(boardsTable).run()
+
+    res.status(204).end()
+  } catch (err) {
+    next(err)
+  }
+})
+
 // DELETE /api/v1/boards/:id
 router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
   try {

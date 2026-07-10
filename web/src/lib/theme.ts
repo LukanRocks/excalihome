@@ -29,6 +29,8 @@ const applyTheme = () => {
   listeners.forEach((listener) => listener())
 }
 
+export const clearTheme = () => localStorage.removeItem(STORAGE_KEY)
+
 export const initTheme = () => {
   applyTheme()
 
