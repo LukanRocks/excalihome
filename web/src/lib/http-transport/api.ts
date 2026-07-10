@@ -3,6 +3,7 @@ import { perform, request } from './helpers'
 export interface BoardSummary {
   id: number
   name: string
+  pinned: boolean
   createdAt: string
   updatedAt: string
 }
@@ -23,6 +24,7 @@ export const api = {
     get: (id: number) => perform<Board>(`/boards/${id}`),
     create: (data?: { name?: string; boardData?: unknown }) => perform<Board>('/boards', request('POST', data ?? {})),
     update: (id: number, data: { name?: string; boardData?: unknown }) => perform<Board>(`/boards/${id}`, request('PUT', data)),
+    pin: (id: number, pinned: boolean) => perform<Board>(`/boards/${id}/pin`, request('PUT', { pinned })),
     delete: (id: number) => perform<void>(`/boards/${id}`, { method: 'DELETE' }),
   },
 }
