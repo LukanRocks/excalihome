@@ -59,13 +59,6 @@ pnpm dev
 
 The API server runs on port `3001` and the Vite dev server on port `5173` by default.
 
-To run a production build locally (the backend serves the built frontend, like the Docker image):
-
-```bash
-pnpm build
-pnpm start
-```
-
 ### Database migrations
 
 The schema lives in `apps/backend/src/db/schema.ts`. After changing it, generate a migration with:

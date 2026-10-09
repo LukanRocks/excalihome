@@ -28,8 +28,7 @@ per-app entry points.
 
 - `pnpm dev`: backend (`tsx watch`, port 3001) and web (Vite, port 5173, proxies `/api` and `/socket.io` to the
   backend) in parallel
-- `pnpm build`: builds both apps and copies `apps/web/dist` into `apps/backend/public`
-- `pnpm start`: runs the built backend, which also serves the frontend (same as the Docker image)
+- `pnpm build`: builds both apps
 - `pnpm db:generate`: generates a Drizzle migration after changing `apps/backend/src/db/schema.ts`
 
 # Formatting

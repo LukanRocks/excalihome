@@ -8,7 +8,6 @@ build/
 .next/
 out/
 *.tsbuildinfo
-apps/backend/public/
 
 # Env
 .env

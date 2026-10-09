@@ -7,7 +7,6 @@ out/
 coverage/
 .turbo/
 .pnpm-store/
-apps/backend/public/
 
 # Generated or verbatim files
 pnpm-lock.yaml
