@@ -7,6 +7,6 @@ export default defineConfig({
   out: './src/db/migrations',
   casing: 'snake_case',
   dbCredentials: {
-    url: join(process.env.DATA_DIR ?? './data', 'excalihome.db'),
+    url: join(process.env.DATA_DIR ?? '../../data', 'excalihome.db'),
   },
 })

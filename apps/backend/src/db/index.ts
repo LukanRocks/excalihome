@@ -5,7 +5,9 @@ import { mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import * as schema from './schema'
 
-export const DATA_DIR = process.env.DATA_DIR ?? join(process.cwd(), 'data')
+// Defaults to <repo root>/data — the same folder docker-compose mounts — so dev and a
+// locally run container share one database. Resolved from this file (src/db or dist/db)
+export const DATA_DIR = process.env.DATA_DIR ?? join(__dirname, '..', '..', '..', '..', 'data')
 
 if (!existsSync(DATA_DIR)) {
   mkdirSync(DATA_DIR, { recursive: true })
