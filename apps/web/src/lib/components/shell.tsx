@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Home, Monitor, Moon, Pencil, Pin, PinOff, Plus, Presentation, Settings, Sun, Trash2 } from 'lucide-react'
+import { Copy, Home, Monitor, Moon, Pencil, Pin, PinOff, Plus, Presentation, Settings, Sun, Trash2 } from 'lucide-react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/lib/components/button'
@@ -55,6 +55,12 @@ export const Shell = () => {
     refreshBoards()
   }
 
+  const duplicateBoard = async (board: BoardSummary) => {
+    const copy = await api.boards.duplicate(board.id)
+
+    navigate(`/${copy.id}`)
+  }
+
   const deleteBoard = async (board: BoardSummary) => {
     if (!window.confirm(`Delete "${board.name}"? This cannot be undone.`)) return
 
@@ -77,6 +83,7 @@ export const Shell = () => {
           action: () => togglePin(board),
         },
         { icon: <Pencil />, label: 'Rename', action: () => renameBoard(board) },
+        { icon: <Copy />, label: 'Duplicate', action: () => duplicateBoard(board) },
         { icon: <Trash2 />, label: 'Delete', action: () => deleteBoard(board), destructive: true },
       ]}
     >

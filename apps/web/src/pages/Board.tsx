@@ -1,7 +1,7 @@
 import '@excalidraw/excalidraw/index.css'
 
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { Clock, CloudCheck, Download, FolderOpen, LoaderCircle, Maximize2, Minimize2, Trash2 } from 'lucide-react'
+import { Clock, CloudCheck, Copy, Download, FolderOpen, LoaderCircle, Maximize2, Minimize2, Trash2 } from 'lucide-react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
 import { Excalidraw, hashElementsVersion, MainMenu, serializeAsJSON } from '@excalidraw/excalidraw'
@@ -144,6 +144,23 @@ export default function Board() {
     downloadFile(`${savedName ?? 'board'}.excalidraw`, new Blob([json], { type: 'application/json' }))
   }
 
+  // Copies the live scene rather than the stored board, so edits still in the
+  // save debounce window make it into the duplicate
+  const duplicateBoard = async () => {
+    if (!excalidrawAPI) return
+
+    const copy = await api.boards.create({
+      name: `${savedName ?? 'Board'} (copy)`,
+      boardData: {
+        elements: excalidrawAPI.getSceneElements(),
+        appState: persistableAppState(excalidrawAPI.getAppState()),
+        files: excalidrawAPI.getFiles(),
+      },
+    })
+
+    navigate(`/${copy.id}`)
+  }
+
   const deleteBoard = async () => {
     if (!window.confirm(`Delete "${savedName}"? This cannot be undone.`)) return
 
@@ -245,6 +262,9 @@ export default function Board() {
           </MainMenu.Item>
           <MainMenu.Item icon={<Download />} onSelect={exportBoard}>
             Export
+          </MainMenu.Item>
+          <MainMenu.Item icon={<Copy />} onSelect={duplicateBoard}>
+            Duplicate
           </MainMenu.Item>
           <MainMenu.DefaultItems.SaveAsImage />
           <MainMenu.Separator />

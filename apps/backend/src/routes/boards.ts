@@ -160,6 +160,28 @@ router.post('/import', (req: Request, res: Response, next: NextFunction) => {
   }
 })
 
+// POST /api/v1/boards/:id/duplicate
+router.post('/:id/duplicate', (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = Number(req.params.id)
+
+    const existing = db.select({ name: boardsTable.name, boardData: boardsTable.boardData }).from(boardsTable).where(eq(boardsTable.id, id)).get()
+
+    if (!existing) return res.status(404).json({ error: 'Board not found' })
+
+    // Pinned state isn't copied — the duplicate starts out in recents
+    const [board] = db
+      .insert(boardsTable)
+      .values({ name: `${existing.name} (copy)`, boardData: existing.boardData })
+      .returning()
+      .all()
+
+    res.status(201).json(board)
+  } catch (err) {
+    next(err)
+  }
+})
+
 // PUT /api/v1/boards/:id
 router.put('/:id', (req: Request, res: Response, next: NextFunction) => {
   try {
