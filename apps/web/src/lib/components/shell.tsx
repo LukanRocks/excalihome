@@ -9,10 +9,13 @@ import { SearchInput } from '@/lib/components/search-input'
 import { ShortcutBadge } from '@/lib/components/shortcut-badge'
 import { api, BoardSummary } from '@/lib/http-transport/api'
 import { useTheme } from '@/lib/theme'
+import { cn } from '@/lib/utils'
 
 export interface ShellContext {
   boards: BoardSummary[] | undefined
   refreshBoards: () => void
+  focusMode: boolean
+  setFocusMode: (focusMode: boolean) => void
 }
 
 export const Shell = () => {
@@ -21,6 +24,8 @@ export const Shell = () => {
   const { theme, toggleTheme } = useTheme()
 
   const [boards, setBoards] = useState<BoardSummary[]>()
+  // Hides the header and sidebar so a board fills the window; toggled from the board page
+  const [focusMode, setFocusMode] = useState(false)
 
   const refreshBoards = () => {
     api.boards.list().then(setBoards)
@@ -84,7 +89,7 @@ export const Shell = () => {
 
   return (
     <div className='flex h-screen w-screen flex-col bg-sidebar'>
-      <header className='grid h-14 shrink-0 grid-cols-[1fr_minmax(0,24rem)_1fr] items-center gap-4 px-2'>
+      <header hidden={focusMode} className='grid h-14 shrink-0 grid-cols-[1fr_minmax(0,24rem)_1fr] items-center gap-4 px-2'>
         <Link to='/' className='flex items-center gap-2 justify-self-start px-1 py-2'>
           <img src='/logo.svg' alt='ExcaliHome' className='size-8 rounded-lg' />
           <span className='text-lg leading-none font-semibold tracking-tight text-sidebar-foreground'>ExcaliHome</span>
@@ -98,7 +103,7 @@ export const Shell = () => {
       </header>
 
       <div className='flex min-h-0 flex-1'>
-        <aside className='flex w-56 flex-col p-2'>
+        <aside hidden={focusMode} className='flex w-56 flex-col p-2'>
           <div className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto'>
             <nav className='flex flex-col gap-1'>
               <NavItem to='/' end icon={<Home />}>
@@ -127,8 +132,8 @@ export const Shell = () => {
           </footer>
         </aside>
 
-        <main className='mr-2 mb-2 min-w-0 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background'>
-          <Outlet context={{ boards, refreshBoards } satisfies ShellContext} />
+        <main className={cn('min-w-0 flex-1 overflow-auto bg-background', !focusMode && 'mr-2 mb-2 rounded-xl border border-sidebar-border')}>
+          <Outlet context={{ boards, refreshBoards, focusMode, setFocusMode } satisfies ShellContext} />
         </main>
       </div>
     </div>

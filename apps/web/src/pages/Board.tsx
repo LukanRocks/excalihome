@@ -1,15 +1,18 @@
 import '@excalidraw/excalidraw/index.css'
 
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { Clock, CloudCheck, Download, FolderOpen, LoaderCircle, Trash2 } from 'lucide-react'
+import { Clock, CloudCheck, Download, FolderOpen, LoaderCircle, Maximize2, Minimize2, Trash2 } from 'lucide-react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
 import { Excalidraw, hashElementsVersion, MainMenu, serializeAsJSON } from '@excalidraw/excalidraw'
 import { AppState, ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
 
+import { Button } from '@/lib/components/button'
 import { ShellContext } from '@/lib/components/shell'
+import { useDevice } from '@/lib/hooks/use-device'
 import { useCollaboration } from '@/lib/hooks/use-collaboration'
 import { api } from '@/lib/http-transport/api'
+import { formatShortcut, matchesShortcut, shortcuts } from '@/lib/shortcuts'
 import { useTheme } from '@/lib/theme'
 import { downloadFile } from '@/lib/utils'
 
@@ -33,7 +36,8 @@ export default function Board() {
   const navigate = useNavigate()
 
   const { resolvedTheme } = useTheme()
-  const { boards, refreshBoards } = useOutletContext<ShellContext>()
+  const { boards, refreshBoards, focusMode, setFocusMode } = useOutletContext<ShellContext>()
+  const { isMac } = useDevice()
 
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null)
   const { broadcastScene, broadcastPointer } = useCollaboration(Number(id), excalidrawAPI)
@@ -65,6 +69,22 @@ export default function Board() {
     setName(trimmed)
     api.boards.update(Number(id), { name: trimmed }).then(refreshBoards)
   }
+
+  // Focus mode only applies to boards — leaving the page brings the shell back
+  useEffect(() => () => setFocusMode(false), [])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!matchesShortcut(event, shortcuts.toggleFocusMode)) return
+
+      event.preventDefault()
+      setFocusMode(!focusMode)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [focusMode])
 
   const [saveStatus, setSaveStatus] = useState<keyof typeof SAVE_STATES>('saved')
 
@@ -202,9 +222,20 @@ export default function Board() {
           saveTimeout.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS)
         }}
         renderTopRightUI={() => (
-          <div className='flex h-9 items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground [&_svg]:size-4'>
-            {SAVE_STATES[saveStatus].icon}
-            {SAVE_STATES[saveStatus].label}
+          <div className='flex items-center gap-1'>
+            <div className='flex h-9 items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground [&_svg]:size-4'>
+              {SAVE_STATES[saveStatus].icon}
+              {SAVE_STATES[saveStatus].label}
+            </div>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => setFocusMode(!focusMode)}
+              title={`${focusMode ? 'Exit focus mode' : 'Focus mode'} (${formatShortcut(shortcuts.toggleFocusMode, isMac)})`}
+              className='text-muted-foreground'
+            >
+              {focusMode ? <Minimize2 /> : <Maximize2 />}
+            </Button>
           </div>
         )}
       >
