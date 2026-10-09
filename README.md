@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./web/public/logo.svg" alt="ExcaliHome Logo" width="100" height="100" />
+  <img src="./apps/web/public/logo.svg" alt="ExcaliHome Logo" width="100" height="100" />
   <h1>ExcaliHome</h1>
   <p><strong>Self-hosted Excalidraw board manager</strong></p>
   <p>Create and organize your Excalidraw boards on your own hardware.</p>
@@ -59,15 +59,26 @@ pnpm dev
 
 The API server runs on port `3001` and the Vite dev server on port `5173` by default.
 
-### Database migrations
-
-The schema lives in `backend/src/db/schema.ts`. After changing it, generate a migration with:
+To run a production build locally (the backend serves the built frontend, like the Docker image):
 
 ```bash
-pnpm -C backend db:generate
+pnpm build
+pnpm start
+```
+
+### Database migrations
+
+The schema lives in `apps/backend/src/db/schema.ts`. After changing it, generate a migration with:
+
+```bash
+pnpm db:generate
 ```
 
 Pending migrations are applied automatically when the server starts.
+
+## License
+
+ExcaliHome is released under the [MIT License](./LICENSE).
 
 ---
 

@@ -2,14 +2,22 @@
   "name": "excalihome",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@11.10.0",
   "scripts": {
+    "prepare": "husky",
     "dev": "pnpm --parallel --filter excalihome-web --filter excalihome-backend dev",
-    "build": "pnpm -C backend build && pnpm -C web build",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "build": "pnpm -C apps/backend build && pnpm -C apps/web build && rm -rf apps/backend/public && cp -r apps/web/dist apps/backend/public",
+    "start": "pnpm -C apps/backend start",
+    "db:generate": "pnpm -C apps/backend db:generate",
+    "prettier:format": "prettier --write .",
+    "prettier:check": "prettier --check ."
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
     "prettier": "3.9.4",
     "prettier-plugin-tailwindcss": "0.8.0"
   }
