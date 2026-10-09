@@ -39,7 +39,7 @@ export const NavItem = ({ to, end, icon, actions, children }: NavItemProps) => (
       <span className='truncate'>{children}</span>
     </NavLink>
     {!!actions?.length && (
-      <div className='absolute right-2 top-1/2 hidden -translate-y-1/2 group-hover:flex group-has-data-popup-open:flex'>
+      <div className='absolute top-1/2 right-2 hidden -translate-y-1/2 group-hover:flex group-has-data-popup-open:flex'>
         <Menu.Root>
           <Menu.Trigger className='flex size-4 items-center justify-center text-muted-foreground hover:text-sidebar-accent-foreground data-popup-open:text-sidebar-accent-foreground [&_svg]:size-4'>
             <Ellipsis />
@@ -50,7 +50,7 @@ export const NavItem = ({ to, end, icon, actions, children }: NavItemProps) => (
                 {actions.map(({ icon, label, action, destructive }) => (
                   <Menu.Item
                     className={cn(
-                      'flex select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+                      'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0',
                       destructive && 'text-destructive data-highlighted:text-destructive',
                     )}
                     key={label}

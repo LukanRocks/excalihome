@@ -87,7 +87,7 @@ export const Shell = () => {
       <header className='grid h-14 shrink-0 grid-cols-[1fr_minmax(0,24rem)_1fr] items-center gap-4 px-2'>
         <Link to='/' className='flex items-center gap-2 justify-self-start px-1 py-2'>
           <img src='/logo.svg' alt='ExcaliHome' className='size-8 rounded-lg' />
-          <span className='text-lg font-semibold leading-none tracking-tight text-sidebar-foreground'>ExcaliHome</span>
+          <span className='text-lg leading-none font-semibold tracking-tight text-sidebar-foreground'>ExcaliHome</span>
         </Link>
         <SearchInput />
         <Button onClick={createBoard} className='justify-self-end'>
@@ -111,9 +111,7 @@ export const Shell = () => {
 
             {!!pinnedBoards?.length && <NavGroup title='Pinned'>{pinnedBoards.map(boardItem)}</NavGroup>}
 
-            <NavGroup title='Recents'>
-              {recentBoards?.map(boardItem)}
-            </NavGroup>
+            <NavGroup title='Recents'>{recentBoards?.map(boardItem)}</NavGroup>
           </div>
 
           <footer className='flex items-center gap-1 pt-2'>
@@ -129,7 +127,7 @@ export const Shell = () => {
           </footer>
         </aside>
 
-        <main className='mb-2 mr-2 min-w-0 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background'>
+        <main className='mr-2 mb-2 min-w-0 flex-1 overflow-auto rounded-xl border border-sidebar-border bg-background'>
           <Outlet context={{ boards, refreshBoards } satisfies ShellContext} />
         </main>
       </div>

@@ -16,7 +16,4 @@ export const shortcuts = {
 export type ShortcutAction = keyof typeof shortcuts
 
 export const matchesShortcut = (event: KeyboardEvent, shortcut: Shortcut) =>
-  event.code === shortcut.code &&
-  (event.metaKey || event.ctrlKey) === !!shortcut.meta &&
-  event.altKey === !!shortcut.alt &&
-  event.shiftKey === !!shortcut.shift
+  event.code === shortcut.code && (event.metaKey || event.ctrlKey) === !!shortcut.meta && event.altKey === !!shortcut.alt && event.shiftKey === !!shortcut.shift

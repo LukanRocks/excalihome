@@ -185,13 +185,14 @@ export default function Board() {
 
             setSaveStatus('saving')
 
-            api.boards.update(Number(id), {
-              boardData: {
-                elements: elements.filter((element) => !element.isDeleted),
-                appState: persistableAppState(appState),
-                files,
-              },
-            })
+            api.boards
+              .update(Number(id), {
+                boardData: {
+                  elements: elements.filter((element) => !element.isDeleted),
+                  appState: persistableAppState(appState),
+                  files,
+                },
+              })
               // Newer edits may have queued another save while this one was in flight
               .then(() => !pendingSave.current && setSaveStatus('saved'))
               .catch(() => setSaveStatus('pending'))
@@ -241,7 +242,7 @@ export default function Board() {
             }
           }}
           // Aligned next to Excalidraw's hamburger island: 1rem editor padding + 2.25rem button + 0.5rem gap
-          className='absolute left-15 top-4 z-10 h-9 min-w-24 max-w-72 rounded-lg bg-transparent px-3 text-sm font-medium text-foreground outline-none transition-colors field-sizing-content hover:bg-accent focus:bg-background focus:shadow-md focus:ring-2 focus:ring-ring'
+          className='absolute top-4 left-15 z-10 field-sizing-content h-9 max-w-72 min-w-24 rounded-lg bg-transparent px-3 text-sm font-medium text-foreground transition-colors outline-none hover:bg-accent focus:bg-background focus:shadow-md focus:ring-2 focus:ring-ring'
         />
       )}
     </div>

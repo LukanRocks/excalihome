@@ -16,13 +16,13 @@ export const SearchInput = () => {
 
   return (
     <form onSubmit={onSubmit} className='relative w-full max-w-xs'>
-      <SearchIcon className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+      <SearchIcon className='pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground' />
       <Input
         type='search'
         name='q'
         defaultValue={searchParams.get('q') ?? ''}
         placeholder='Search boards…'
-        className='h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring'
+        className='h-9 w-full rounded-md border border-input bg-background pr-3 pl-9 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring'
       />
     </form>
   )

@@ -32,4 +32,6 @@ app.use(errorHandler)
 
 runMigrations()
 
-server.listen(PORT, () => {console.log(`Excalihome server running on http://localhost:${PORT}`)})
+server.listen(PORT, () => {
+  console.log(`Excalihome server running on http://localhost:${PORT}`)
+})

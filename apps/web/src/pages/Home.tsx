@@ -20,11 +20,7 @@ export default function Home() {
       ) : (
         <div className='flex flex-wrap gap-3'>
           {filtered.map((board) => (
-            <Link
-              className='flex w-44 flex-col gap-1.5 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent'
-              key={board.id}
-              to={`/${board.id}`}
-            >
+            <Link className='flex w-44 flex-col gap-1.5 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent' key={board.id} to={`/${board.id}`}>
               <p className='truncate text-sm font-medium text-card-foreground'>{board.name}</p>
               <p className='text-xs text-muted-foreground'>{new Date(board.updatedAt).toLocaleDateString('en-GB')}</p>
             </Link>

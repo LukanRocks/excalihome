@@ -165,11 +165,7 @@ router.put('/:id', (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = Number(req.params.id)
 
-    const existing = db
-      .select({ id: boardsTable.id, updatedAt: boardsTable.updatedAt })
-      .from(boardsTable)
-      .where(eq(boardsTable.id, id))
-      .get()
+    const existing = db.select({ id: boardsTable.id, updatedAt: boardsTable.updatedAt }).from(boardsTable).where(eq(boardsTable.id, id)).get()
 
     if (!existing) return res.status(404).json({ error: 'Board not found' })
 
@@ -199,11 +195,7 @@ router.put('/:id/pin', (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = Number(req.params.id)
 
-    const existing = db
-      .select({ id: boardsTable.id, updatedAt: boardsTable.updatedAt })
-      .from(boardsTable)
-      .where(eq(boardsTable.id, id))
-      .get()
+    const existing = db.select({ id: boardsTable.id, updatedAt: boardsTable.updatedAt }).from(boardsTable).where(eq(boardsTable.id, id)).get()
 
     if (!existing) return res.status(404).json({ error: 'Board not found' })
 
@@ -212,12 +204,7 @@ router.put('/:id/pin', (req: Request, res: Response, next: NextFunction) => {
     if (typeof pinned !== 'boolean') return res.status(400).json({ error: 'pinned must be a boolean' })
 
     // Pass updatedAt through so $onUpdate doesn't bump it — pinning shouldn't reorder recents
-    const [board] = db
-      .update(boardsTable)
-      .set({ pinned, updatedAt: existing.updatedAt })
-      .where(eq(boardsTable.id, id))
-      .returning()
-      .all()
+    const [board] = db.update(boardsTable).set({ pinned, updatedAt: existing.updatedAt }).where(eq(boardsTable.id, id)).returning().all()
 
     res.json(board)
   } catch (err) {
