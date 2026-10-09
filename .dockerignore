@@ -1,0 +1,19 @@
+# Dependencies are installed inside the image; host node_modules contain
+# symlinks into the host's pnpm store that don't resolve in the container
+**/node_modules
+.pnpm-store
+
+# Build output is produced in the build stages
+**/dist
+
+# Local data, VCS and tooling
+data
+.git
+.github
+.husky
+.claude
+.vscode
+.idea
+*.log
+.env
+.env.*

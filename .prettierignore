@@ -1,11 +1,20 @@
-dist/
+# Dependencies and build output
 node_modules/
+dist/
+build/
 .next/
-.turbo/
+out/
 coverage/
-pnpm-lock.yaml
+.turbo/
 .pnpm-store/
+
+# Generated or verbatim files
+pnpm-lock.yaml
+LICENSE
+apps/backend/src/db/migrations/
 *.md
+
+# Tooling
 .claude/
 .agents/
 .mcp.json

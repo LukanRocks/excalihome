@@ -1,10 +1,15 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build output
 dist/
+build/
+.next/
+out/
+*.tsbuildinfo
 
-# Environment & secrets
+# Env
 .env
 .env.local
 .env.*.local
@@ -18,12 +23,24 @@ data/
 
 # Logs
 *.log
-
-# TypeScript
-*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Testing / coverage
+coverage/
+
+# Misc
+*.pem
+.turbo/
 
 # Affinity Designer lock files
 *~lock~

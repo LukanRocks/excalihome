@@ -4,30 +4,30 @@ RUN corepack enable
 FROM base AS client-build
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY web/package.json ./web/package.json
-COPY backend/package.json ./backend/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/backend/package.json ./apps/backend/package.json
 RUN pnpm install --frozen-lockfile --filter excalihome-web
-COPY web/ ./web/
-RUN pnpm -C web build
+COPY apps/web/ ./apps/web/
+RUN pnpm -C apps/web build
 
 FROM base AS server-build
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY web/package.json ./web/package.json
-COPY backend/package.json ./backend/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/backend/package.json ./apps/backend/package.json
 RUN pnpm install --frozen-lockfile --filter excalihome-backend
-COPY backend/ ./backend/
-RUN pnpm -C backend build
+COPY apps/backend/ ./apps/backend/
+RUN pnpm -C apps/backend build
 
 FROM base AS production
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY web/package.json ./web/package.json
-COPY backend/package.json ./backend/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/backend/package.json ./apps/backend/package.json
 RUN pnpm install --frozen-lockfile --filter excalihome-backend --prod
-COPY --from=server-build /app/backend/dist ./backend/dist
-COPY --from=client-build /app/web/dist ./backend/public
+COPY --from=server-build /app/apps/backend/dist ./apps/backend/dist
+COPY --from=client-build /app/apps/web/dist ./apps/backend/public
 RUN mkdir -p /app/data
 
 ENV NODE_ENV=production
@@ -35,5 +35,5 @@ ENV PORT=3000
 ENV DATA_DIR=/app/data
 
 EXPOSE 3000
-WORKDIR /app/backend
+WORKDIR /app/apps/backend
 CMD ["node", "dist/index.js"]

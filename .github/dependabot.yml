@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: 'npm'
     # Root only: pnpm workspace has a single lockfile, so root PRs cover
-    # web/ and backend/; per-directory PRs skip the lockfile entirely.
+    # apps/*; per-directory PRs skip the lockfile entirely.
     directories:
       - '/'
     schedule:
