@@ -8,12 +8,19 @@ minimumReleaseAge: 2880 # minutes = 48h cooldown on newly published versions
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 129600 # minutes = 90d; versions older than this skip trust checks (minimumReleaseAge covers the fresh end)
 
-# Force patched lodash-es (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh, GHSA-xxjr-mmjv-4gpg)
-# and nanoid 3.x (GHSA-mwcw-c2x4-8c55)
+# Force patched versions of transitive deps whose parents pin vulnerable releases:
+# - lodash-es (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh, GHSA-xxjr-mmjv-4gpg)
+# - nanoid 3.x, pinned to 3.3.3 by @excalidraw/excalidraw (GHSA-28wg-ghj8-5hjv, GHSA-2v37-7h3g-55p8)
+# - nanoid 4.x, used by @excalidraw/mermaid-to-excalidraw; only fixed in 5.x, same `nanoid()` API
+#   (GHSA-mwcw-c2x4-8c55, GHSA-xwg4-73v4-xw9w, GHSA-28wg-ghj8-5hjv, GHSA-2v37-7h3g-55p8)
+# - browserslist, held at 4.28.5 via @babel/helper-compilation-targets (GHSA-73wf-gq98-2v4g,
+#   GHSA-c83g-rgw3-j3cx); also pulls in patched baseline-browser-mapping (GHSA-w5vr-8v7q-w6rv)
 # !TODO: Review in future package updates if these overrides still required
 overrides:
   'lodash-es@<4.18.0': '>=4.18.0'
-  'nanoid@<3.3.8': '3.3.15'
+  'nanoid@<3.3.18': '3.3.20'
+  'nanoid@>=4.0.0 <5.1.16': '5.1.16'
+  'browserslist@<4.28.7': '4.29.3'
 
 allowBuilds:
   '@tailwindcss/oxide': true
