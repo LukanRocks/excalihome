@@ -29,6 +29,7 @@ per-app entry points.
 - `pnpm dev`: backend (`tsx watch`, port 3001) and web (Vite, port 5173, proxies `/api` and `/socket.io` to the
   backend) in parallel
 - `pnpm build`: builds both apps
+- `pnpm typecheck`: type-checks both apps (`tsc --noEmit`), as the `typecheck` CI job does
 - `pnpm db:generate`: generates a Drizzle migration after changing `apps/backend/src/db/schema.ts`
 
 # Formatting
@@ -52,3 +53,24 @@ This repo pins these supply-chain hardening settings:
   already covers the fresh end)
 
 Don't loosen these without discussing why first.
+
+# Process and repo governance
+
+How changes get merged is documented in [CONTRIBUTING.md](CONTRIBUTING.md). Rules for agents working here:
+
+- **Never push to `main`.** Branch as `<type>/<short-description>` off `main` and open a pull request.
+- **Don't merge pull requests or use the admin bypass.** Approving and merging belong to the maintainer, even when
+  the checks are green.
+- **PR titles are Conventional Commits** — the squash merge uses the PR title as the commit subject and the PR
+  description as its body, so write both for `git log`.
+- **Required checks: `format`, `typecheck`, `build`.** Run the equivalents locally before opening a PR. If you rename or remove
+  a CI job, the branch rulesets must be updated in the same change, or every PR will wait on a check that never runs.
+- **Dependabot groups are generated.** After adding or removing a workspace package or a dependency, regenerate
+  `.github/dependabot.yml` with the repo-governance skill's `dependabot-config.mjs --write` and commit it with
+  the change. Don't hand-edit the group lists. The `docker` entry at the end of the file is hand-maintained:
+  `--write` drops it, so re-append it after regenerating.
+- **Don't loosen governance** — rulesets, `.github/dependabot.yml` cooldowns, Actions permissions, or the
+  `pnpm-workspace.yaml` security settings — without discussing why first.
+- **Pin GitHub Actions to a full commit SHA** with the version in a trailing comment
+  (`uses: actions/checkout@<sha> # v7.0.0`). The repo rejects unpinned actions and only allows GitHub-owned and
+  verified-creator actions.
