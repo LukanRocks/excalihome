@@ -12,6 +12,9 @@ RUN pnpm -C apps/web build
 
 FROM base AS server-build
 WORKDIR /app
+# better-sqlite3 13+ installs via an implicit `node-gyp rebuild` (a no-op when its bundled
+# prebuild matches), but node-gyp still needs Python to run
+RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/backend/package.json ./apps/backend/package.json
